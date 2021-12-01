@@ -1,82 +1,41 @@
-mapboxgl.accessToken = "your_access_token";
-let markers = [];
-let colors = [
-  "",
-  "#000000",
-  "#5B618A",
-  "#9EADC8",
-  "#B9E28C",
-  "#D6D84F",
-  "#02394A",
-  "#043565",
-  "#5158BB",
-  "#F26DF9",
-  "#EB4B98",
-  "#48ACF0",
-  "#594236",
-  "#6F584B",
-  "#93A3BC",
-  "#CCDDE2",
-  "#D4CBE5",
-  "#CFC7D2",
-  "#BEA8AA",
-  "#9E9885",
-  "#7C7F65",
-  "#E0BAD7",
-  "#61D095",
-  "#48BF84",
-  "#439775",
-  "#2A4747",
-  "#FFBE0B",
-  "#FB5607",
-  "#FF006E",
-  "#8338EC",
-  "#3A86FF",
+// This array contains the coordinates for all bus stops between MIT and Harvard
+const busStops = [
+  [-71.093729, 42.359244],
+  [-71.094915, 42.360175],
+  [-71.0958, 42.360698],
+  [-71.099558, 42.362953],
+  [-71.103476, 42.365248],
+  [-71.106067, 42.366806],
+  [-71.108717, 42.368355],
+  [-71.110799, 42.369192],
+  [-71.113095, 42.370218],
+  [-71.115476, 42.372085],
+  [-71.117585, 42.373016],
+  [-71.118625, 42.374863],
 ];
+
+mapboxgl.accessToken = 'pk.eyJ1IjoidmVyYXBoaXBwc3MiLCJhIjoiY2t2bzYybnNvMHJvbDJ2cXM0NzJvcGdqdCJ9.c6oy5oK5W_VqCL-QapF_6g';
+
+// This is the map instance
 let map = new mapboxgl.Map({
-  container: "map",
-  style: "mapbox://styles/mapbox/streets-v11",
-  center: [-71.091542, 42.358862],
-  zoom: 12,
+  container: 'map',
+  style: 'mapbox://styles/mapbox/streets-v11',
+  center: [-71.104081, 42.365554],
+  zoom: 14,
 });
-async function run() {
-  // get bus data
-  let busObjects = [];
-  for (let route = 1; route <= 30; route++) {
-    let buses = await getBuses(route);
-    if (buses.length > 0) {
-      let busObject = {
-        route: route,
-        buses: await getBuses(route),
-        color: colors[route],
-      };
-      busObjects.push(busObject);
-    }
-  }
 
-  // clear markers
-  if (markers.length > 0) {
-    markers.forEach((marker) => marker.remove());
-  }
-
-  // set markers
-  busObjects.forEach((busObject) => {
-    busObject.buses.forEach((bus) => {
-      let marker = new mapboxgl.Marker({ color: busObject.color })
-        .setLngLat([bus.attributes.longitude, bus.attributes.latitude])
-        .addTo(map);
-      markers.push(marker);
-    });
-  });
-
-  // timer
-  setTimeout(run, 15000);
+// a markerat the first coordinates in the array busStops. 
+let marker = new mapboxgl.Marker();
+marker.setLngLat(busStops[0])
+marker.addTo(map);
+// counter here represents the index of the current bus stop
+let counter = 0;
+function move() {
+  setTimeout(() => {
+    if (counter >= busStops.length) return;
+    marker.setLngLat(busStops[counter]);
+    counter++;
+    move();
+  }, 1000);
 }
-// Request bus data from MBTA
-async function getBuses(route, apiKey) {
-  const url = `https://api-v3.mbta.com/vehicles?filter[route]=${route}&include=trip&api_key=your_api_key`;
-  const response = await fetch(url);
-  const json = await response.json();
-  return json.data;
-}
-run();
+
